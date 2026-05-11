@@ -7,7 +7,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-^5.5.3-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platforms](https://img.shields.io/badge/platforms-14-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-0.2.6-blue.svg)
+![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)
 
 ## ✨ 核心特性
 
@@ -19,6 +19,7 @@
 - **📝 类型安全**: 完整的TypeScript支持和扩展接口
 - **🎯 学术论文优先**: 智能过滤，优先显示学术论文而非书籍
 - **🔄 智能错误处理**: 统一ErrorHandler，支持重试逻辑和平台降级
+- **🔎 正文片段检索**: 通过 Semantic Scholar 检索开放获取论文正文段落
 
 ## 📚 支持的平台
 
@@ -31,7 +32,7 @@
 | **Google Scholar** | ✅ | ❌ | ❌ | ✅ | ❌ | 广泛学术搜索 |
 | **bioRxiv** | ✅ | ✅ | ✅ | ❌ | ❌ | 生物学预印本 |
 | **medRxiv** | ✅ | ✅ | ✅ | ❌ | ❌ | 医学预印本 |
-| **Semantic Scholar** | ✅ | ✅ | ❌ | ✅ | 🟡 可选 | AI语义搜索 |
+| **Semantic Scholar** | ✅ | ✅ | ✅ 片段 | ✅ | 🟡 可选* | AI语义搜索 + OA正文片段 |
 | **IACR ePrint** | ✅ | ✅ | ✅ | ❌ | ❌ | 密码学论文 |
 | **Sci-Hub** | ✅ | ✅ | ❌ | ❌ | ❌ | 通过DOI获取论文 |
 | **ScienceDirect** | ✅ | ❌ | ❌ | ✅ | ✅ 必需 | 爱思唯尔全文数据库 |
@@ -40,6 +41,8 @@
 | **Scopus** | ✅ | ❌ | ❌ | ✅ | ✅ 必需 | 最大引文数据库 |
 
 ✅ 已支持 | ❌ 不支持 | 🟡 可选 | ✅* 仅开放获取
+
+* `search_semantic_snippets` 需要配置 `SEMANTIC_SCHOLAR_API_KEY`。
 
 > **注意**: Wiley TDM API不支持关键词搜索。请使用`search_crossref`搜索Wiley文章获取DOI，然后使用`download_paper`配合`platform="wiley"`通过DOI下载PDF。
 
@@ -61,8 +64,8 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/Dianel555/paper-search-mcp-nodejs.git
-cd paper-search-mcp-nodejs
+git clone https://github.com/mr-rainstse/paper-search.git
+cd paper-search
 
 # 安装依赖
 npm install
@@ -109,14 +112,14 @@ cp .env.example .env
 
 ### 构建和运行
 
-#### 方法1: NPX部署 (推荐用于MCP)
+#### 方法1: GitHub包部署 (推荐用于MCP)
 ```bash
-# 使用npx直接运行 (最常见的MCP部署方式)
-npx -y paper-search-mcp-nodejs
+# 直接从GitHub运行
+npx -y github:mr-rainstse/paper-search
 
 # 或全局安装
-npm install -g paper-search-mcp-nodejs
-paper-search-mcp
+npm install -g github:mr-rainstse/paper-search
+paper-search
 ```
 
 #### 方法2: 本地开发
@@ -142,9 +145,9 @@ npm run dev
 ```json
 {
   "mcpServers": {
-    "paper-search-nodejs": {
+    "paper-search": {
       "command": "npx",
-      "args": ["-y", "paper-search-mcp-nodejs"],
+      "args": ["-y", "github:mr-rainstse/paper-search"],
       "env": {
         "WOS_API_KEY": "your_web_of_science_api_key"
       }
@@ -159,7 +162,7 @@ npm run dev
   "mcpServers": {
     "paper_search_nodejs": {
       "command": "node",
-      "args": ["/path/to/paper-search-mcp-nodejs/dist/server.js"],
+      "args": ["/path/to/paper-search/dist/server.js"],
       "env": {
         "WOS_API_KEY": "your_web_of_science_api_key"
       }
@@ -295,6 +298,18 @@ search_semantic_scholar({
   maxResults: 10,
   fieldsOfStudy: ["Computer Science"],
   year: "2023"
+})
+```
+
+### `search_semantic_snippets`
+检索 Semantic Scholar 索引的开放获取论文正文片段。
+
+```typescript
+search_semantic_snippets({
+  query: "dropout rate transformer training",
+  limit: 5,
+  fieldsOfStudy: "Computer Science",
+  year: "2020-2024"
 })
 ```
 
@@ -670,7 +685,7 @@ export NODE_ENV=development
 
 ### 可选的API密钥
 - **PubMed**: 提高速率限制（从3次/秒到10次/秒）
-- **Semantic Scholar**: 提高速率限制（从20次/分钟到180次/分钟）
+- **Semantic Scholar**: 提高速率限制（从20次/分钟到180次/分钟）；`search_semantic_snippets` 必须配置该密钥
 
 ## 📝 许可证
 
@@ -688,7 +703,7 @@ MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。
 
 ## 🐛 问题报告
 
-如果遇到问题，请在 [GitHub Issues](https://github.com/your-username/paper-search-mcp-nodejs/issues) 中报告。
+如果遇到问题，请在 [GitHub Issues](https://github.com/mr-rainstse/paper-search/issues) 中报告。
 
 ---
 

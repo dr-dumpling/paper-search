@@ -226,6 +226,36 @@ export const TOOLS: Tool[] = [
     }
   },
   {
+    name: 'search_semantic_snippets',
+    description:
+      'Search full-text snippets (body paragraphs) from open-access papers indexed by Semantic Scholar. Unlike search_semantic_scholar, this searches paper body text. Requires SEMANTIC_SCHOLAR_API_KEY.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description:
+            'Natural language query to search within paper full text (e.g., "dropout rate 0.1 transformer training")'
+        },
+        limit: {
+          type: 'number',
+          minimum: 1,
+          maximum: 10,
+          description: 'Maximum number of snippet results to return (default: 5, max: 10)'
+        },
+        year: {
+          type: 'string',
+          description: 'Year filter, e.g. "2023" or "2020-2024"'
+        },
+        fieldsOfStudy: {
+          type: 'string',
+          description: 'Comma-separated fields of study filter, e.g. "Computer Science,Medicine"'
+        }
+      },
+      required: ['query']
+    }
+  },
+  {
     name: 'search_iacr',
     description: 'Search IACR ePrint Archive for cryptography papers',
     inputSchema: {

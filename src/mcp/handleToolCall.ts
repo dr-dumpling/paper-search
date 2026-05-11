@@ -4,6 +4,29 @@ import { parseToolArgs } from './schemas.js';
 import { PaperFactory, type Paper } from '../models/Paper.js';
 import { PaperSource, type SearchOptions } from '../platforms/PaperSource.js';
 import { logDebug } from '../utils/Logger.js';
+import axios from 'axios';
+
+interface SemanticSnippetResult {
+  paper?: {
+    title?: string;
+    paperId?: string;
+    year?: number;
+    openAccessPdf?: {
+      url?: string;
+    };
+  };
+  snippet?: {
+    section?: string;
+    snippetKind?: string;
+    text?: string;
+    startOffset?: number;
+    endOffset?: number;
+  };
+}
+
+interface SemanticSnippetResponse {
+  data?: SemanticSnippetResult[];
+}
 
 function jsonTextResponse(text: string) {
   return {
@@ -205,6 +228,98 @@ export async function handleToolCall(
           2
         )}`
       );
+    }
+
+    case 'search_semantic_snippets': {
+      const { query, limit, year, fieldsOfStudy } = args;
+      const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
+
+      if (!apiKey) {
+        return jsonTextResponse(
+          'Error: SEMANTIC_SCHOLAR_API_KEY is not configured. Please set it in your MCP environment variables.'
+        );
+      }
+
+      const params: Record<string, string | number> = {
+        query,
+        limit
+      };
+      if (year) params.year = year;
+      if (fieldsOfStudy) params.fieldsOfStudy = fieldsOfStudy;
+
+      try {
+        logDebug('Semantic Scholar snippet search params:', params);
+        const response = await axios.get<SemanticSnippetResponse>(
+          'https://api.semanticscholar.org/graph/v1/snippet/search',
+          {
+            params,
+            headers: {
+              'x-api-key': apiKey,
+              Accept: 'application/json',
+              'User-Agent': 'paper-search/0.3.0'
+            },
+            timeout: 15000
+          }
+        );
+
+        const snippets = response.data.data ?? [];
+        if (snippets.length === 0) {
+          return jsonTextResponse(
+            `No full-text snippets found for query: "${query}"\n\nNote: Only open-access papers are indexed. Try a different search term or check if the topic has OA coverage.`
+          );
+        }
+
+        const formatted = snippets
+          .map((item, index) => {
+            const paper = item.paper ?? {};
+            const snippet = item.snippet ?? {};
+            const text = String(snippet.text ?? '').replace(/\n/g, '\n    ');
+            const url = paper.paperId
+              ? `https://www.semanticscholar.org/paper/${paper.paperId}`
+              : '';
+
+            return (
+              `[${index + 1}] ${paper.title ?? 'Unknown title'} (${paper.year ?? 'N/A'})\n` +
+              `    Section: ${snippet.section ?? 'Unknown section'} | Type: ${snippet.snippetKind ?? 'unknown'}\n` +
+              `    URL: ${url}\n` +
+              `    PDF: ${paper.openAccessPdf?.url ?? '(no direct PDF link)'}\n\n` +
+              `    Snippet:\n    ${text}\n`
+            );
+          })
+          .join('\n---\n\n');
+
+        return jsonTextResponse(
+          `Found ${snippets.length} full-text snippet(s) for: "${query}"\n\n` +
+            'These are actual body paragraphs from open-access papers via Semantic Scholar /snippet/search.\n' +
+            'Each result shows paper title, section, and matching text.\n\n' +
+            `---\n\n${formatted}`
+        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logDebug('Semantic Scholar snippet search error:', message);
+
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            return jsonTextResponse(
+              `Error: Invalid or missing API key. Please verify SEMANTIC_SCHOLAR_API_KEY.\nStatus: ${error.response.status}`
+            );
+          }
+          if (error.response?.status === 429) {
+            return jsonTextResponse(
+              'Error: Rate limit exceeded for Semantic Scholar API. Please wait a moment and try again.'
+            );
+          }
+          return jsonTextResponse(
+            `Error calling Semantic Scholar snippet search: ${message}\n\nResponse: ${JSON.stringify(
+              error.response?.data ?? {},
+              null,
+              2
+            )}`
+          );
+        }
+
+        return jsonTextResponse(`Error calling Semantic Scholar snippet search: ${message}`);
+      }
     }
 
     case 'search_iacr': {

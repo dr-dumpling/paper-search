@@ -8,7 +8,7 @@ A Node.js Model Context Protocol (MCP) server for searching and downloading acad
 ![TypeScript](https://img.shields.io/badge/typescript-^5.5.3-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platforms](https://img.shields.io/badge/platforms-14-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-0.2.6-blue.svg)
+![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)
 
 ## ✨ Key Features
 
@@ -20,6 +20,7 @@ A Node.js Model Context Protocol (MCP) server for searching and downloading acad
 - **📝 Type Safety**: Complete TypeScript support with extended interfaces
 - **🎯 Academic Papers First**: Smart filtering prioritizing academic papers over books
 - **🔄 Smart Error Handling**: Unified ErrorHandler with retry logic and platform fallback
+- **🔎 Full-Text Snippet Search**: Search open-access paper body paragraphs through Semantic Scholar snippets
 
 ## 📚 Supported Platforms
 
@@ -32,7 +33,7 @@ A Node.js Model Context Protocol (MCP) server for searching and downloading acad
 | **Google Scholar** | ✅ | ❌ | ❌ | ✅ | ❌ | Comprehensive academic search |
 | **bioRxiv** | ✅ | ✅ | ✅ | ❌ | ❌ | Biology preprints |
 | **medRxiv** | ✅ | ✅ | ✅ | ❌ | ❌ | Medical preprints |
-| **Semantic Scholar** | ✅ | ✅ | ❌ | ✅ | 🟡 Optional | AI semantic search |
+| **Semantic Scholar** | ✅ | ✅ | ✅ Snippets | ✅ | 🟡 Optional* | AI semantic search + OA body snippets |
 | **IACR ePrint** | ✅ | ✅ | ✅ | ❌ | ❌ | Cryptography papers |
 | **Sci-Hub** | ✅ | ✅ | ❌ | ❌ | ❌ | Universal paper access via DOI |
 | **ScienceDirect** | ✅ | ❌ | ❌ | ✅ | ✅ Required | Elsevier's full-text database |
@@ -41,6 +42,8 @@ A Node.js Model Context Protocol (MCP) server for searching and downloading acad
 | **Scopus** | ✅ | ❌ | ❌ | ✅ | ✅ Required | Largest citation database |
 
 ✅ Supported | ❌ Not supported | 🟡 Optional | ✅* Open Access only
+
+* `search_semantic_snippets` requires `SEMANTIC_SCHOLAR_API_KEY`.
 
 > **Note**: Wiley TDM API does not support keyword search. Use `search_crossref` to find Wiley articles, then use `download_paper` with `platform="wiley"` to download PDFs by DOI.
 
@@ -62,8 +65,8 @@ This project includes integrations that may have **legal, contractual (ToS), and
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/paper-search-mcp-nodejs.git
-cd paper-search-mcp-nodejs
+git clone https://github.com/mr-rainstse/paper-search.git
+cd paper-search
 
 # Install dependencies
 npm install
@@ -110,14 +113,14 @@ cp .env.example .env
 
 ### Build and Run
 
-#### Method 1: NPX (Recommended for MCP)
+#### Method 1: GitHub Package (Recommended for MCP)
 ```bash
-# Direct run with npx (most common MCP deployment)
-npx -y paper-search-mcp-nodejs
+# Direct run from GitHub
+npx -y github:mr-rainstse/paper-search
 
 # Or install globally
-npm install -g paper-search-mcp-nodejs
-paper-search-mcp
+npm install -g github:mr-rainstse/paper-search
+paper-search
 ```
 
 #### Method 2: Local Development
@@ -143,9 +146,9 @@ Add the following configuration to your Claude Desktop config file:
 ```json
 {
   "mcpServers": {
-    "paper-search-nodejs": {
+    "paper-search": {
       "command": "npx",
-      "args": ["-y", "paper-search-mcp-nodejs"],
+      "args": ["-y", "github:mr-rainstse/paper-search"],
       "env": {
         "WOS_API_KEY": "your_web_of_science_api_key"
       }
@@ -160,7 +163,7 @@ Add the following configuration to your Claude Desktop config file:
   "mcpServers": {
     "paper_search_nodejs": {
       "command": "node",
-      "args": ["/path/to/paper-search-mcp-nodejs/dist/server.js"],
+      "args": ["/path/to/paper-search/dist/server.js"],
       "env": {
         "WOS_API_KEY": "your_web_of_science_api_key"
       }
@@ -296,6 +299,18 @@ search_semantic_scholar({
   maxResults: 10,
   fieldsOfStudy: ["Computer Science"],
   year: "2023"
+})
+```
+
+### `search_semantic_snippets`
+Search full-text snippets from open-access paper body paragraphs indexed by Semantic Scholar.
+
+```typescript
+search_semantic_snippets({
+  query: "dropout rate transformer training",
+  limit: 5,
+  fieldsOfStudy: "Computer Science",
+  year: "2020-2024"
 })
 ```
 
@@ -669,6 +684,7 @@ export NODE_ENV=development
 - **Citation Networks**: Paper relationships and influence metrics
 - **Open Access PDFs**: Direct links to freely available papers
 - **Research Fields**: Filter by specific academic disciplines
+- **Body Snippets**: Search matching paragraphs in open-access full text with `search_semantic_snippets`
 
 ### Sci-Hub Features
 
@@ -695,7 +711,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 🐛 Issue Reporting
 
-If you encounter issues, please report them at [GitHub Issues](https://github.com/your-username/paper-search-mcp-nodejs/issues).
+If you encounter issues, please report them at [GitHub Issues](https://github.com/mr-rainstse/paper-search/issues).
 
 ## 🙏 Acknowledgments
 

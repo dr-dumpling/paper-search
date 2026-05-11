@@ -21,8 +21,8 @@ dotenv.config();
 
 const server = new Server(
   {
-    name: 'paper-search-mcp-nodejs',
-    version: '0.2.6'
+    name: 'paper-search',
+    version: '0.3.0'
   },
   {
     capabilities: {
@@ -43,8 +43,8 @@ server.setRequestHandler(InitializeRequestSchema, async request => {
       }
     },
     serverInfo: {
-      name: 'paper-search-mcp-nodejs',
-      version: '0.2.6'
+      name: 'paper-search',
+      version: '0.3.0'
     }
   };
 });
@@ -85,7 +85,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
  */
 async function main() {
   try {
-    logDebug('Starting Paper Search MCP Server (Node.js)...');
+    logDebug('Starting paper-search MCP server...');
     logDebug(`Working directory: ${process.cwd()}`);
     logDebug(`Node.js version: ${process.version}`);
     logDebug('Process arguments:', process.argv);
@@ -96,7 +96,7 @@ async function main() {
     logDebug('Connecting to stdio transport...');
     await server.connect(transport);
     
-    logDebug('Paper Search MCP Server is running');
+    logDebug('paper-search MCP server is running');
   } catch (error) {
     logDebug('Failed to start server:', error);
     process.exit(1);

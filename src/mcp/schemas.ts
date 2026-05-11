@@ -98,6 +98,15 @@ export const SearchSemanticScholarSchema = z
   })
   .strip();
 
+export const SearchSemanticSnippetsSchema = z
+  .object({
+    query: z.string().min(1),
+    limit: z.number().int().min(1).max(10).optional().default(5),
+    year: z.string().optional(),
+    fieldsOfStudy: z.string().optional()
+  })
+  .strip();
+
 export const SearchIACRSchema = z
   .object({
     query: z.string().min(1),
@@ -214,6 +223,7 @@ export type ToolName =
   | 'search_biorxiv'
   | 'search_medrxiv'
   | 'search_semantic_scholar'
+  | 'search_semantic_snippets'
   | 'search_iacr'
   | 'download_paper'
   | 'search_google_scholar'
@@ -243,6 +253,8 @@ export function parseToolArgs(toolName: ToolName, args: unknown): any {
       return SearchMedRxivSchema.parse(args);
     case 'search_semantic_scholar':
       return SearchSemanticScholarSchema.parse(args);
+    case 'search_semantic_snippets':
+      return SearchSemanticSnippetsSchema.parse(args);
     case 'search_iacr':
       return SearchIACRSchema.parse(args);
     case 'download_paper':
