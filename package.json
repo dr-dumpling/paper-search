@@ -1,6 +1,6 @@
 {
   "name": "paper-search",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A Node.js MCP server for searching academic papers, metadata, citations, PDFs, and open-access full-text snippets.",
   "main": "dist/server.js",
   "type": "module",

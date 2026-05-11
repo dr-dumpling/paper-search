@@ -274,6 +274,7 @@ export class ErrorHandler {
     options: {
       maxRetries?: number;
       initialDelayMs?: number;
+      minDelayMs?: number;
       maxDelayMs?: number;
       context?: string;
     } = {}
@@ -281,6 +282,7 @@ export class ErrorHandler {
     const {
       maxRetries = 3,
       initialDelayMs = 1000,
+      minDelayMs = 0,
       maxDelayMs = 30000,
       context = 'operation'
     } = options;
@@ -297,9 +299,14 @@ export class ErrorHandler {
           throw error;
         }
 
-        // Exponential backoff with full jitter
-        const baseDelay = Math.min(maxDelayMs, initialDelayMs * Math.pow(2, attempt));
-        const jitteredDelay = Math.floor(Math.random() * baseDelay);
+        // Prefer server-provided Retry-After for rate limits; otherwise use exponential backoff with jitter.
+        const retryAfterDelay = ErrorHandler.getRetryAfterDelayMs(error);
+        const baseDelay = retryAfterDelay ?? Math.min(maxDelayMs, initialDelayMs * Math.pow(2, attempt));
+        const cappedDelay = Math.min(maxDelayMs, baseDelay);
+        const jitteredDelay =
+          retryAfterDelay !== null
+            ? cappedDelay
+            : Math.max(minDelayMs, Math.floor(Math.random() * cappedDelay));
 
         logDebug(`[Retry] ${context} attempt ${attempt + 1}/${maxRetries} failed, retrying in ${jitteredDelay}ms`);
 
@@ -308,6 +315,25 @@ export class ErrorHandler {
     }
 
     throw lastError;
+  }
+
+  private static getRetryAfterDelayMs(error: any): number | null {
+    const retryAfter = error.response?.headers?.['retry-after'];
+    if (!retryAfter) {
+      return null;
+    }
+
+    const seconds = parseInt(retryAfter, 10);
+    if (!Number.isNaN(seconds)) {
+      return Math.max(0, seconds * 1000);
+    }
+
+    const retryAt = Date.parse(retryAfter);
+    if (!Number.isNaN(retryAt)) {
+      return Math.max(0, retryAt - Date.now());
+    }
+
+    return null;
   }
 }
 

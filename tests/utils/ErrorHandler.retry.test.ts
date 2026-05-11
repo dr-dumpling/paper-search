@@ -7,7 +7,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
   });
 
   it('should succeed on first attempt without retrying', async () => {
-    const mockFn = jest.fn().mockResolvedValue('success');
+    const mockFn = jest.fn<() => Promise<string>>().mockResolvedValue('success');
 
     const result = await ErrorHandler.retryWithBackoff(mockFn, { maxRetries: 3 });
 
@@ -21,7 +21,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 429
     };
 
-    const mockFn = jest.fn()
+    const mockFn = jest.fn<() => Promise<string>>()
       .mockRejectedValueOnce(error)
       .mockRejectedValueOnce(error)
       .mockResolvedValueOnce('success');
@@ -35,13 +35,35 @@ describe('ErrorHandler.retryWithBackoff', () => {
     expect(mockFn).toHaveBeenCalledTimes(3);
   });
 
+  it('should retry on 429 errors with Retry-After header', async () => {
+    const error = {
+      response: {
+        status: 429,
+        headers: { 'retry-after': '0' }
+      },
+      status: 429
+    };
+
+    const mockFn = jest.fn<() => Promise<string>>()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValueOnce('success');
+
+    const result = await ErrorHandler.retryWithBackoff(mockFn, {
+      maxRetries: 2,
+      initialDelayMs: 10
+    });
+
+    expect(result).toBe('success');
+    expect(mockFn).toHaveBeenCalledTimes(2);
+  });
+
   it('should retry on 503 (service unavailable) errors', async () => {
     const error = {
       response: { status: 503 },
       status: 503
     };
 
-    const mockFn = jest.fn()
+    const mockFn = jest.fn<() => Promise<string>>()
       .mockRejectedValueOnce(error)
       .mockResolvedValueOnce('success');
 
@@ -60,7 +82,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 504
     };
 
-    const mockFn = jest.fn()
+    const mockFn = jest.fn<() => Promise<string>>()
       .mockRejectedValueOnce(error)
       .mockResolvedValueOnce('success');
 
@@ -79,7 +101,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 400
     };
 
-    const mockFn = jest.fn().mockRejectedValue(error);
+    const mockFn = jest.fn<() => Promise<string>>().mockRejectedValue(error);
 
     await expect(
       ErrorHandler.retryWithBackoff(mockFn, { maxRetries: 3 })
@@ -94,7 +116,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 401
     };
 
-    const mockFn = jest.fn().mockRejectedValue(error);
+    const mockFn = jest.fn<() => Promise<string>>().mockRejectedValue(error);
 
     await expect(
       ErrorHandler.retryWithBackoff(mockFn, { maxRetries: 3 })
@@ -109,7 +131,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 403
     };
 
-    const mockFn = jest.fn().mockRejectedValue(error);
+    const mockFn = jest.fn<() => Promise<string>>().mockRejectedValue(error);
 
     await expect(
       ErrorHandler.retryWithBackoff(mockFn, { maxRetries: 3 })
@@ -124,7 +146,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 404
     };
 
-    const mockFn = jest.fn().mockRejectedValue(error);
+    const mockFn = jest.fn<() => Promise<string>>().mockRejectedValue(error);
 
     await expect(
       ErrorHandler.retryWithBackoff(mockFn, { maxRetries: 3 })
@@ -139,7 +161,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 429
     };
 
-    const mockFn = jest.fn().mockRejectedValue(error);
+    const mockFn = jest.fn<() => Promise<string>>().mockRejectedValue(error);
 
     await expect(
       ErrorHandler.retryWithBackoff(mockFn, {
@@ -158,7 +180,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
       status: 429
     };
 
-    const mockFn = jest.fn()
+    const mockFn = jest.fn<() => Promise<string>>()
       .mockRejectedValueOnce(error)
       .mockRejectedValueOnce(error)
       .mockResolvedValueOnce('success');
@@ -168,6 +190,7 @@ describe('ErrorHandler.retryWithBackoff', () => {
     await ErrorHandler.retryWithBackoff(mockFn, {
       maxRetries: 3,
       initialDelayMs: 100,
+      minDelayMs: 30,
       maxDelayMs: 1000
     });
 

@@ -22,7 +22,7 @@ dotenv.config();
 const server = new Server(
   {
     name: 'paper-search',
-    version: '0.3.0'
+    version: '0.3.1'
   },
   {
     capabilities: {
@@ -44,7 +44,7 @@ server.setRequestHandler(InitializeRequestSchema, async request => {
     },
     serverInfo: {
       name: 'paper-search',
-      version: '0.3.0'
+      version: '0.3.1'
     }
   };
 });
