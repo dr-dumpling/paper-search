@@ -20,7 +20,7 @@ A Node.js Model Context Protocol (MCP) server for searching and downloading acad
 - **📝 Type Safety**: Complete TypeScript support with extended interfaces
 - **🎯 Academic Papers First**: Smart filtering prioritizing academic papers over books
 - **🔄 Smart Error Handling**: Unified ErrorHandler with retry logic and platform fallback
-- **🔎 Full-Text Snippet Search**: Search open-access paper body paragraphs through Semantic Scholar snippets
+- **🔎 Full-Text Search**: Search open-access paper body paragraphs through Semantic Scholar snippets
 
 ## 📚 Supported Platforms
 
