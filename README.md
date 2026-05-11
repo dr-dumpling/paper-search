@@ -699,6 +699,16 @@ export NODE_ENV=development
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
+## Attribution
+
+This project is a fork and derivative work based on Dianel555's
+[paper-search-mcp-nodejs](https://github.com/Dianel555/paper-search-mcp-nodejs).
+The original MIT copyright notice is preserved in [LICENSE](LICENSE):
+Copyright (c) 2025 Dianel555.
+
+This fork renames the package to `paper-search` and adds Semantic Scholar
+open-access full-text snippet search through `search_semantic_snippets`.
+
 ## 🤝 Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

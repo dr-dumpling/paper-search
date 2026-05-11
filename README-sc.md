@@ -691,6 +691,16 @@ export NODE_ENV=development
 
 MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。
 
+## 署名与来源
+
+本项目是基于 Dianel555 的
+[paper-search-mcp-nodejs](https://github.com/Dianel555/paper-search-mcp-nodejs)
+进行修改和再发布的 fork / derivative work。原始 MIT 版权声明已保留在
+[LICENSE](LICENSE) 中：Copyright (c) 2025 Dianel555。
+
+本 fork 将包名改为 `paper-search`，并新增了通过
+`search_semantic_snippets` 调用 Semantic Scholar 开放获取正文片段检索的能力。
+
 ## 🤝 贡献
 
 欢迎贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解如何参与。
