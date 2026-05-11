@@ -8,7 +8,7 @@ A Node.js Model Context Protocol (MCP) server for searching and downloading acad
 ![TypeScript](https://img.shields.io/badge/typescript-^5.5.3-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platforms](https://img.shields.io/badge/platforms-14-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.3.2-blue.svg)
 
 ## ✨ Key Features
 
@@ -53,6 +53,16 @@ This project includes integrations that may have **legal, contractual (ToS), and
 
 - **Sci-Hub**: May provide access to copyrighted works without authorization in many jurisdictions. Use only when you have the legal right to access the content (e.g., open access, author‑provided copies, or licensed institutional access).
 - **Google Scholar**: This integration relies on automated fetching/parsing and may violate Google's Terms of Service or trigger blocking/rate limits. Prefer official APIs or metadata sources (e.g., Crossref, Semantic Scholar) when ToS compliance is required.
+
+## MCP Safety Limits
+
+The MCP server enforces conservative search limits so agents do not request too many records in one call:
+
+- Normal metadata searches are capped at 50 results.
+- `search_papers(platform="all")` is capped at 20 results because it is an aggregate entry point.
+- arXiv is capped at 25 results and uses a shared 3-second Export API gate across local MCP processes.
+- If arXiv returns 429, later Export API requests cool down for 30 seconds and use the arxiv.org web fallback when possible.
+- Semantic Scholar snippet search remains capped at 10 full-text snippets.
 
 ## 🚀 Quick Start
 

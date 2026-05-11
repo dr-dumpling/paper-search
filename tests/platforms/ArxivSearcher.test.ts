@@ -46,7 +46,7 @@ describe('ArxivSearcher', () => {
     it('should cap arXiv result count to the API-safe limit', () => {
       expect((searcher as any).normalizeMaxResults(undefined)).toBe(10);
       expect((searcher as any).normalizeMaxResults(0)).toBe(1);
-      expect((searcher as any).normalizeMaxResults(250)).toBe(100);
+      expect((searcher as any).normalizeMaxResults(250)).toBe(25);
       expect((searcher as any).normalizeMaxResults(7.8)).toBe(7);
     });
 
@@ -62,6 +62,13 @@ describe('ArxivSearcher', () => {
       expect((searcher as any).shouldUseWebFallback({ response: { status: 503 } })).toBe(true);
       expect((searcher as any).shouldUseWebFallback(new Error('timed out'))).toBe(true);
       expect((searcher as any).shouldUseWebFallback({ response: { status: 400 } })).toBe(false);
+    });
+
+    it('should fall back while the arXiv Export API is cooling down', () => {
+      const error = (searcher as any).createArxivCooldownError(30000);
+
+      expect((error as any).status).toBe(429);
+      expect((searcher as any).shouldUseWebFallback(error)).toBe(true);
     });
 
     it('should parse arXiv web search fallback results', () => {

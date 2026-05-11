@@ -80,7 +80,7 @@ describe('QuotaManager', () => {
 
       try {
         quotaManager.checkQuota('test-platform');
-        fail('Should have thrown QuotaExhaustedError');
+        throw new Error('Should have thrown QuotaExhaustedError');
       } catch (error: any) {
         expect(error).toBeInstanceOf(QuotaExhaustedError);
         expect(error.platform).toBe('test-platform');

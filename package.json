@@ -1,6 +1,6 @@
 {
   "name": "paper-search",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A Node.js MCP server for searching academic papers, metadata, citations, PDFs, and open-access full-text snippets.",
   "main": "dist/server.js",
   "type": "module",
@@ -39,7 +39,6 @@
     "cheerio": "^1.1.2",
     "dotenv": "^16.4.5",
     "lru-cache": "^11.2.5",
-    "p-limit": "^7.2.0",
     "pdf-parse": "^1.1.4",
     "xml2js": "^0.6.2",
     "zod": "^3.23.8"
@@ -63,9 +62,6 @@
     "testEnvironment": "node",
     "extensionsToTreatAsEsm": [
       ".ts"
-    ],
-    "transformIgnorePatterns": [
-      "node_modules/(?!(p-limit|yocto-queue)/)"
     ],
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"

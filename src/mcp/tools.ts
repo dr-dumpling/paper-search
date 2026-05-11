@@ -1,4 +1,9 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import {
+  AGGREGATE_SEARCH_MAX_RESULTS,
+  DEFAULT_SEARCH_MAX_RESULTS,
+  PLATFORM_SEARCH_MAX_RESULTS
+} from '../config/searchLimits.js';
 
 export const TOOLS: Tool[] = [
   {
@@ -34,8 +39,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS}; platform="all" is internally capped at ${AGGREGATE_SEARCH_MAX_RESULTS})`
         },
         year: { type: 'string', description: 'Year filter (e.g., "2023", "2020-2023", "2020-")' },
         author: { type: 'string', description: 'Author name filter' },
@@ -78,8 +83,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 50,
-          description: 'Maximum number of results to return'
+          maximum: PLATFORM_SEARCH_MAX_RESULTS.arxiv,
+          description: `Maximum number of results to return (max ${PLATFORM_SEARCH_MAX_RESULTS.arxiv})`
         },
         category: { type: 'string', description: 'arXiv category filter (e.g., cs.AI, physics.gen-ph)' },
         author: { type: 'string', description: 'Author name filter' },
@@ -138,8 +143,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         year: { type: 'string', description: 'Publication year filter (e.g., "2023", "2020-2023")' },
         author: { type: 'string', description: 'Author name filter' },
@@ -168,8 +173,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         days: {
           type: 'number',
@@ -190,8 +195,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         days: {
           type: 'number',
@@ -212,8 +217,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         year: { type: 'string', description: 'Year filter (e.g., "2023", "2020-2023")' },
         fieldsOfStudy: {
@@ -403,8 +408,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         year: { type: 'string', description: 'Year filter (e.g., "2023", "2020-2023")' },
         author: { type: 'string', description: 'Author name filter' },
@@ -428,8 +433,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         year: { type: 'string', description: 'Year filter (e.g., "2023", "2020-2023")' },
         author: { type: 'string', description: 'Author name filter' },
@@ -502,8 +507,8 @@ export const TOOLS: Tool[] = [
         maxResults: {
           type: 'number',
           minimum: 1,
-          maximum: 100,
-          description: 'Maximum number of results to return'
+          maximum: DEFAULT_SEARCH_MAX_RESULTS,
+          description: `Maximum number of results to return (max ${DEFAULT_SEARCH_MAX_RESULTS})`
         },
         year: { type: 'string', description: 'Year filter (e.g., "2023", "2020-2023")' },
         author: { type: 'string', description: 'Author name filter' },

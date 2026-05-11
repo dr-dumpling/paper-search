@@ -1,6 +1,7 @@
 import type { Searchers } from './searchers.js';
 import type { ToolName } from './schemas.js';
 import { parseToolArgs } from './schemas.js';
+import { clampSearchMaxResults, formatLimitNotices, type LimitNotice } from '../config/searchLimits.js';
 import { PaperFactory, type Paper } from '../models/Paper.js';
 import { PaperSource, type SearchOptions } from '../platforms/PaperSource.js';
 import { logDebug } from '../utils/Logger.js';
@@ -64,9 +65,11 @@ export async function handleToolCall(
         sortOrder
       } = args;
 
+      const limitNotices: LimitNotice[] = [];
+      const safeMaxResults = clampSearchMaxResults(maxResults, platform, limitNotices);
       const results: Record<string, any>[] = [];
       const searchOptions: SearchOptions = {
-        maxResults,
+        maxResults: safeMaxResults,
         year,
         author,
         journal,
@@ -101,7 +104,9 @@ export async function handleToolCall(
         results.push(...platformResults.map((paper: Paper) => PaperFactory.toDict(paper)));
       }
 
-      return jsonTextResponse(`Found ${results.length} papers.\n\n${JSON.stringify(results, null, 2)}`);
+      return jsonTextResponse(
+        `${formatLimitNotices(limitNotices)}Found ${results.length} papers.\n\n${JSON.stringify(results, null, 2)}`
+      );
     }
 
     case 'search_arxiv': {
@@ -256,7 +261,7 @@ export async function handleToolCall(
             headers: {
               'x-api-key': apiKey,
               Accept: 'application/json',
-              'User-Agent': 'paper-search/0.3.0'
+              'User-Agent': 'paper-search/0.3.2'
             },
             timeout: 15000
           }

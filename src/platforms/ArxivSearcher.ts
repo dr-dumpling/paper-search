@@ -5,6 +5,7 @@
 
 import axios from 'axios';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import * as xml2js from 'xml2js';
 import * as cheerio from 'cheerio';
@@ -15,6 +16,7 @@ import { logDebug } from '../utils/Logger.js';
 import { RateLimiter } from '../utils/RateLimiter.js';
 import { ErrorHandler } from '../utils/ErrorHandler.js';
 import { RequestCache } from '../utils/RequestCache.js';
+import { PLATFORM_SEARCH_MAX_RESULTS } from '../config/searchLimits.js';
 
 interface ArxivEntry {
   id: string[];
@@ -51,6 +53,15 @@ type ArxivSearchParams = {
 };
 
 const ARXIV_SEARCH_TIMEOUT_MS = 10000;
+const ARXIV_EXPORT_API_INTERVAL_MS = 3000;
+const ARXIV_EXPORT_API_COOLDOWN_MS = 30000;
+const ARXIV_RATE_LIMIT_LOCK_STALE_MS = 10000;
+const ARXIV_RATE_LIMIT_LOCK_POLL_MS = 100;
+
+interface ArxivRateLimitState {
+  lastRequestAt?: number;
+  cooldownUntil?: number;
+}
 
 export class ArxivSearcher extends PaperSource {
   private readonly rateLimiter: RateLimiter;
@@ -143,12 +154,17 @@ export class ArxivSearcher extends PaperSource {
   ): Promise<Paper[]> {
     try {
       await this.rateLimiter.waitForPermission();
+      await this.waitForGlobalExportApiSlot();
 
       const response = await this.fetchSearchPage(url, params);
       logDebug(`arXiv API Response: ${response.status} ${response.statusText}, Data length: ${response.data?.length || 0}`);
 
       return await this.parseSearchResponse(response.data);
     } catch (apiError: any) {
+      if (this.isRateLimitError(apiError)) {
+        await this.markGlobalExportApiCooldown();
+      }
+
       if (!this.shouldUseWebFallback(apiError)) {
         throw apiError;
       }
@@ -191,7 +207,7 @@ export class ArxivSearcher extends PaperSource {
     if (!Number.isFinite(maxResults)) {
       return 10;
     }
-    return Math.max(1, Math.min(100, Math.floor(maxResults as number)));
+    return Math.max(1, Math.min(PLATFORM_SEARCH_MAX_RESULTS.arxiv, Math.floor(maxResults as number)));
   }
 
   private isTimeoutError(error: any): boolean {
@@ -205,6 +221,122 @@ export class ArxivSearcher extends PaperSource {
   private shouldUseWebFallback(error: any): boolean {
     const status = error?.response?.status || error?.status;
     return this.isTimeoutError(error) || [429, 500, 502, 503, 504].includes(status);
+  }
+
+  private isRateLimitError(error: any): boolean {
+    return (error?.response?.status || error?.status) === 429;
+  }
+
+  private async waitForGlobalExportApiSlot(): Promise<void> {
+    await this.withArxivRateLimitLock(async () => {
+      const paths = this.getArxivRateLimitPaths();
+      const state = this.readArxivRateLimitState(paths.statePath);
+      const now = Date.now();
+
+      if (state.cooldownUntil && state.cooldownUntil > now) {
+        throw this.createArxivCooldownError(state.cooldownUntil - now);
+      }
+
+      const waitMs = Math.max(0, (state.lastRequestAt || 0) + ARXIV_EXPORT_API_INTERVAL_MS - now);
+      if (waitMs > 0) {
+        await this.sleep(waitMs);
+      }
+
+      const lastRequestAt = Date.now();
+      const nextState: ArxivRateLimitState = { ...state, lastRequestAt };
+      if (nextState.cooldownUntil && nextState.cooldownUntil <= lastRequestAt) {
+        delete nextState.cooldownUntil;
+      }
+      this.writeArxivRateLimitState(paths.statePath, nextState);
+    });
+  }
+
+  private async markGlobalExportApiCooldown(): Promise<void> {
+    await this.withArxivRateLimitLock(async () => {
+      const paths = this.getArxivRateLimitPaths();
+      const state = this.readArxivRateLimitState(paths.statePath);
+      this.writeArxivRateLimitState(paths.statePath, {
+        ...state,
+        cooldownUntil: Date.now() + ARXIV_EXPORT_API_COOLDOWN_MS
+      });
+    });
+  }
+
+  private async withArxivRateLimitLock<T>(operation: () => Promise<T>): Promise<T> {
+    const paths = this.getArxivRateLimitPaths();
+    fs.mkdirSync(paths.dir, { recursive: true });
+    const fd = await this.acquireArxivRateLimitLock(paths.lockPath);
+
+    try {
+      return await operation();
+    } finally {
+      fs.closeSync(fd);
+      fs.rmSync(paths.lockPath, { force: true });
+    }
+  }
+
+  private async acquireArxivRateLimitLock(lockPath: string): Promise<number> {
+    while (true) {
+      try {
+        return fs.openSync(lockPath, 'wx');
+      } catch (error: any) {
+        if (error?.code !== 'EEXIST') {
+          throw error;
+        }
+
+        this.removeStaleArxivRateLimitLock(lockPath);
+        await this.sleep(ARXIV_RATE_LIMIT_LOCK_POLL_MS);
+      }
+    }
+  }
+
+  private removeStaleArxivRateLimitLock(lockPath: string): void {
+    try {
+      const stats = fs.statSync(lockPath);
+      if (Date.now() - stats.mtimeMs > ARXIV_RATE_LIMIT_LOCK_STALE_MS) {
+        fs.rmSync(lockPath, { force: true });
+      }
+    } catch {
+      // Another process may have released the lock between stat and remove.
+    }
+  }
+
+  private getArxivRateLimitPaths(): { dir: string; statePath: string; lockPath: string } {
+    const dir = process.env.PAPER_SEARCH_CACHE_DIR || path.join(os.homedir(), '.cache', 'paper-search');
+    return {
+      dir,
+      statePath: path.join(dir, 'arxiv-rate-limit.json'),
+      lockPath: path.join(dir, 'arxiv-rate-limit.lock')
+    };
+  }
+
+  private readArxivRateLimitState(statePath: string): ArxivRateLimitState {
+    try {
+      if (!fs.existsSync(statePath)) {
+        return {};
+      }
+      const parsed = JSON.parse(fs.readFileSync(statePath, 'utf8')) as ArxivRateLimitState;
+      return {
+        lastRequestAt: typeof parsed.lastRequestAt === 'number' ? parsed.lastRequestAt : undefined,
+        cooldownUntil: typeof parsed.cooldownUntil === 'number' ? parsed.cooldownUntil : undefined
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  private writeArxivRateLimitState(statePath: string, state: ArxivRateLimitState): void {
+    fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
+  }
+
+  private createArxivCooldownError(waitMs: number): Error {
+    const error = new Error(`arXiv Export API is cooling down for ${Math.ceil(waitMs / 1000)}s after a rate-limit response.`);
+    (error as any).status = 429;
+    return error;
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   private async searchViaWebFallback(query: string, options: SearchOptions, maxResults: number): Promise<Paper[]> {

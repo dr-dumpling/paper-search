@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  DEFAULT_SEARCH_MAX_RESULTS,
+  PLATFORM_SEARCH_MAX_RESULTS
+} from '../config/searchLimits.js';
 
 const SortBySchema = z.enum(['relevance', 'date', 'citations']);
 const SortOrderSchema = z.enum(['asc', 'desc']);
@@ -27,7 +31,7 @@ export const SearchPapersSchema = z
       ])
       .optional()
       .default('crossref'),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     year: z.string().optional(),
     author: z.string().optional(),
     journal: z.string().optional(),
@@ -43,7 +47,7 @@ export const SearchPapersSchema = z
 export const SearchArxivSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(50).optional().default(10),
+    maxResults: z.number().int().min(1).max(PLATFORM_SEARCH_MAX_RESULTS.arxiv).optional().default(10),
     category: z.string().optional(),
     author: z.string().optional(),
     year: z.string().optional(),
@@ -69,7 +73,7 @@ export const SearchWebOfScienceSchema = z
 export const SearchPubMedSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     year: z.string().optional(),
     author: z.string().optional(),
     journal: z.string().optional(),
@@ -81,7 +85,7 @@ export const SearchPubMedSchema = z
 export const SearchBioRxivSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     days: z.number().int().min(1).max(3650).optional(),
     category: z.string().optional()
   })
@@ -92,7 +96,7 @@ export const SearchMedRxivSchema = SearchBioRxivSchema;
 export const SearchSemanticScholarSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     year: z.string().optional(),
     fieldsOfStudy: z.array(z.string()).optional()
   })
@@ -157,7 +161,7 @@ export const CheckSciHubMirrorsSchema = z
 export const SearchScienceDirectSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     year: z.string().optional(),
     author: z.string().optional(),
     journal: z.string().optional(),
@@ -168,7 +172,7 @@ export const SearchScienceDirectSchema = z
 export const SearchSpringerSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     year: z.string().optional(),
     author: z.string().optional(),
     journal: z.string().optional(),
@@ -201,7 +205,7 @@ export const SearchScopusSchema = z
 export const SearchCrossrefSchema = z
   .object({
     query: z.string().min(1),
-    maxResults: z.number().int().min(1).max(100).optional().default(10),
+    maxResults: z.number().int().min(1).max(DEFAULT_SEARCH_MAX_RESULTS).optional().default(10),
     year: z.string().optional(),
     author: z.string().optional(),
     sortBy: SortBySchema.optional().default('relevance'),

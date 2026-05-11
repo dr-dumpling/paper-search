@@ -7,7 +7,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-^5.5.3-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platforms](https://img.shields.io/badge/platforms-14-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.3.2-blue.svg)
 
 ## ✨ 核心特性
 
@@ -52,6 +52,16 @@
 
 - **Sci-Hub**：在许多司法辖区可能涉及未经授权获取受版权保护内容。请仅在你拥有合法访问权的情况下使用（例如开放获取、作者公开版本或机构合法订阅）。
 - **Google Scholar**：该集成依赖自动化抓取/解析，可能违反 Google 的服务条款，且可能触发封禁/限流。若需要严格 ToS 合规，建议优先使用官方 API 或元数据平台（如 Crossref、Semantic Scholar）。
+
+## MCP 安全限制
+
+MCP 服务端会强制执行保守的检索上限，避免 Agent 在一次调用中请求过多记录：
+
+- 常规元数据检索最多返回 50 条。
+- `search_papers(platform="all")` 属于聚合入口，最多返回 20 条。
+- arXiv 最多返回 25 条，并对本机多个 MCP 进程共享 3 秒一次的 Export API 节流。
+- arXiv 返回 429 后，Export API 会冷却 30 秒，并在可能时改用 arxiv.org 网页 fallback。
+- Semantic Scholar 正文片段检索仍限制在最多 10 条。
 
 ## 🚀 快速开始
 

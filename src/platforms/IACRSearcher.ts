@@ -7,7 +7,6 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as path from 'path';
-import pLimit from 'p-limit';
 import { Paper, PaperFactory } from '../models/Paper.js';
 import { PaperSource, SearchOptions, DownloadOptions, PlatformCapabilities } from './PaperSource.js';
 import { TIMEOUTS } from '../config/constants.js';
@@ -269,26 +268,38 @@ export class IACRSearcher extends PaperSource {
     if (options.fetchDetails && papers.length > 0) {
       logDebug('Fetching detailed information for IACR papers...');
 
-      // Use p-limit to control concurrency (max 3 concurrent requests)
-      const limit = pLimit(3);
-
-      const detailPromises = papers.map(paper =>
-        limit(async () => {
-          try {
-            const detailedPaper = await this.getPaperDetails(paper.paperId);
-            return detailedPaper || paper; // 退回到搜索结果数据
-          } catch (error) {
-            logDebug(`Error fetching details for ${paper.paperId}:`, error);
-            return paper;
-          }
-        })
-      );
-
-      const detailedPapers = await Promise.all(detailPromises);
+      const detailedPapers = await this.mapWithConcurrency(papers, 3, async paper => {
+        try {
+          const detailedPaper = await this.getPaperDetails(paper.paperId);
+          return detailedPaper || paper; // 退回到搜索结果数据
+        } catch (error) {
+          logDebug(`Error fetching details for ${paper.paperId}:`, error);
+          return paper;
+        }
+      });
       return detailedPapers;
     }
 
     return papers;
+  }
+
+  private async mapWithConcurrency<T, R>(
+    items: T[],
+    concurrency: number,
+    mapper: (item: T) => Promise<R>
+  ): Promise<R[]> {
+    const results: R[] = new Array(items.length);
+    let nextIndex = 0;
+
+    const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+      while (nextIndex < items.length) {
+        const currentIndex = nextIndex++;
+        results[currentIndex] = await mapper(items[currentIndex]);
+      }
+    });
+
+    await Promise.all(workers);
+    return results;
   }
 
   /**
