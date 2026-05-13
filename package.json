@@ -94,10 +94,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mr-rainstse/paper-search.git"
+    "url": "git+https://github.com/dr-dumpling/paper-search.git"
   },
-  "homepage": "https://github.com/mr-rainstse/paper-search#readme",
+  "homepage": "https://github.com/dr-dumpling/paper-search#readme",
   "bugs": {
-    "url": "https://github.com/mr-rainstse/paper-search/issues"
+    "url": "https://github.com/dr-dumpling/paper-search/issues"
   }
 }

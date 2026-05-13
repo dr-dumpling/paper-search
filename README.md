@@ -75,7 +75,7 @@ The MCP server enforces conservative search limits so agents do not request too 
 
 ```bash
 # Clone repository
-git clone https://github.com/mr-rainstse/paper-search.git
+git clone https://github.com/dr-dumpling/paper-search.git
 cd paper-search
 
 # Install dependencies
@@ -126,10 +126,10 @@ cp .env.example .env
 #### Method 1: GitHub Package (Recommended for MCP)
 ```bash
 # Direct run from GitHub
-npx -y github:mr-rainstse/paper-search
+npx -y github:dr-dumpling/paper-search
 
 # Or install globally
-npm install -g github:mr-rainstse/paper-search
+npm install -g github:dr-dumpling/paper-search
 paper-search
 ```
 
@@ -158,7 +158,7 @@ Add the following configuration to your Claude Desktop config file:
   "mcpServers": {
     "paper-search": {
       "command": "npx",
-      "args": ["-y", "github:mr-rainstse/paper-search"],
+      "args": ["-y", "github:dr-dumpling/paper-search"],
       "env": {
         "WOS_API_KEY": "your_web_of_science_api_key"
       }
@@ -731,7 +731,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 🐛 Issue Reporting
 
-If you encounter issues, please report them at [GitHub Issues](https://github.com/mr-rainstse/paper-search/issues).
+If you encounter issues, please report them at [GitHub Issues](https://github.com/dr-dumpling/paper-search/issues).
 
 ## 🙏 Acknowledgments
 

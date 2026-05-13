@@ -74,7 +74,7 @@ MCP 服务端会强制执行保守的检索上限，避免 Agent 在一次调用
 
 ```bash
 # 克隆仓库
-git clone https://github.com/mr-rainstse/paper-search.git
+git clone https://github.com/dr-dumpling/paper-search.git
 cd paper-search
 
 # 安装依赖
@@ -125,10 +125,10 @@ cp .env.example .env
 #### 方法1: GitHub包部署 (推荐用于MCP)
 ```bash
 # 直接从GitHub运行
-npx -y github:mr-rainstse/paper-search
+npx -y github:dr-dumpling/paper-search
 
 # 或全局安装
-npm install -g github:mr-rainstse/paper-search
+npm install -g github:dr-dumpling/paper-search
 paper-search
 ```
 
@@ -157,7 +157,7 @@ npm run dev
   "mcpServers": {
     "paper-search": {
       "command": "npx",
-      "args": ["-y", "github:mr-rainstse/paper-search"],
+      "args": ["-y", "github:dr-dumpling/paper-search"],
       "env": {
         "WOS_API_KEY": "your_web_of_science_api_key"
       }
@@ -723,7 +723,7 @@ MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。
 
 ## 🐛 问题报告
 
-如果遇到问题，请在 [GitHub Issues](https://github.com/mr-rainstse/paper-search/issues) 中报告。
+如果遇到问题，请在 [GitHub Issues](https://github.com/dr-dumpling/paper-search/issues) 中报告。
 
 ---
 
